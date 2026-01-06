@@ -1,0 +1,37 @@
+/* Recycled Paper Theme Variables */
+
+:root {
+  /* Background Colors - Garbage/Dirt */
+  --color-dirt-dark: #5a4a3a;
+  --color-dirt-medium: #6b5d4f;
+  --color-dirt-light: #8b7355;
+  
+  /* Paper Colors */
+  --color-paper-primary: #faf0e6; /* Linen/off-white */
+  --color-paper-secondary: #f5f5dc; /* Beige */
+  --color-paper-aged: #f4e4c1; /* Light tan */
+  --color-paper-border: #d4c5b0;
+  
+  /* Text Colors */
+  --text-primary: #3d2817; /* Dark brown */
+  --text-secondary: #2c1810; /* Darker brown */
+  --text-tertiary: #1a0f08; /* Charcoal brown */
+  --text-muted: #6b5d4f; /* Muted brown */
+  
+  /* Accent Colors */
+  --color-accent-green: #6b8e6b; /* Muted green */
+  --color-accent-brown: #8b6f47; /* Muted brown */
+  --color-accent-dark: #5a4a3a;
+  
+  /* Typography */
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-paper: 'Georgia', 'Times New Roman', serif;
+  
+  /* Spacing & Effects */
+  --tracking-wide: 0.2em;
+  --tracking-wider: 0.4em;
+  --border-radius-paper: 0.5rem;
+  --shadow-paper: 0 2px 4px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
