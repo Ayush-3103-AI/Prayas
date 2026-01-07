@@ -30,18 +30,12 @@ interface Pickup {
   amount?: number;
 }
 
-const agents = [
-  { id: 'A001', name: 'Rajesh Kumar', zone: 'North Delhi' },
-  { id: 'A002', name: 'Vikram Patel', zone: 'South Delhi' },
-  { id: 'A003', name: 'Amit Singh', zone: 'East Delhi' },
-  { id: 'A004', name: 'Suresh Rao', zone: 'West Delhi' },
-];
-
 export function PickupManagement() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedPickup, setSelectedPickup] = useState<Pickup | null>(null);
   const [viewDetailsOpen, setViewDetailsOpen] = useState(false);
+  const [agents, setAgents] = useState<Array<{ id: string; name: string; zone?: string }>>([]);
 
   // Mock data
   const [pickups, setPickups] = useState<Pickup[]>([
@@ -105,46 +99,71 @@ export function PickupManagement() {
 
   const fetchPickups = async () => {
     try {
-      const data = await apiClient.getAllPickups(statusFilter !== 'all' ? statusFilter : undefined);
-      const transformedPickups = data.map((p: any) => ({
-        id: p._id || p.id,
-        trackingNumber: p._id?.slice(-8) || p.id?.slice(-8) || 'N/A',
-        date: new Date(p.pickupDate).toISOString().split('T')[0],
-        time: p.timeSlot || 'N/A',
-        userName: p.userId?.name || 'Unknown',
-        address: `${p.address?.street || ''}, ${p.address?.city || ''}, ${p.address?.state || ''} ${p.address?.pincode || ''}`,
-        wasteType: p.materials?.[0]?.type || 'Mixed',
-        weight: p.materials?.[0]?.actualWeight || p.materials?.[0]?.estimatedWeight || 0,
-        status: (p.status === 'completed' || p.status === 'collected' ? 'collected' : 
-                 p.status === 'assigned' ? 'assigned' : 
-                 p.status === 'in-progress' ? 'on-the-way' : 
-                 p.status === 'scheduled' ? 'pending' : 'donated') as any,
-        agentId: p.agentId?._id || p.agentId,
-        agentName: p.agentId?.name,
-        ngo: p.selectedNGO?.name || 'N/A',
-        amount: p.totalActualValue || p.totalEstimatedValue,
+      // Use Booking API instead of Pickup API
+      const response: any = await apiClient.getAllBookings(statusFilter !== 'all' ? statusFilter : undefined);
+      // Backend returns { success: true, data: { bookings: [...] } }
+      // apiClient returns data.data, so response is { bookings: [...] }
+      const bookingsData = response?.bookings || (Array.isArray(response) ? response : []);
+      
+      console.log('Admin bookings fetched:', bookingsData.length, 'bookings');
+      
+      // Transform Booking data to component format
+      const transformedPickups = bookingsData.map((booking: any) => ({
+        id: booking._id || booking.id,
+        trackingNumber: booking.bookingId || booking._id?.slice(-8) || 'N/A',
+        date: booking.preferredDate ? new Date(booking.preferredDate).toISOString().split('T')[0] : '',
+        time: booking.preferredTime || 'N/A',
+        userName: booking.userId?.name || 'Unknown',
+        address: booking.address || 'N/A', // Booking model has address as string
+        wasteType: booking.wasteType || 'Mixed',
+        weight: booking.weight || 0,
+        status: (booking.status === 'Completed' ? 'donated' : 
+                 booking.status === 'Assigned' ? 'assigned' : 
+                 booking.status === 'In Progress' ? 'on-the-way' : 
+                 booking.status === 'Pending' ? 'pending' : 'pending') as any,
+        agentId: booking.agentId?._id || booking.agentId || null,
+        agentName: booking.agentId?.name || null,
+        ngo: booking.ngoPartner || 'N/A',
+        amount: (booking.weight || 0) * 10, // Calculate donation value
       }));
       setPickups(transformedPickups);
     } catch (error) {
-      console.error('Failed to fetch pickups:', error);
+      console.error('Failed to fetch bookings:', error);
       // Keep existing mock data if API fails
     }
   };
 
   useEffect(() => {
+    fetchAgents();
     fetchPickups();
     // Refresh every 3 seconds for better sync across portals
     const interval = setInterval(fetchPickups, 3000);
     return () => clearInterval(interval);
   }, [statusFilter]);
 
-  const assignAgent = async (pickupId: string, agentId: string) => {
+  const fetchAgents = async () => {
+    try {
+      const response: any = await apiClient.getAdminAgents();
+      const agentsData = response?.agents || response?.data?.agents || [];
+      setAgents(agentsData.map((agent: any) => ({
+        id: agent._id || agent.id || agent.agentId,
+        name: agent.name,
+        zone: agent.zone || 'N/A',
+      })));
+    } catch (error) {
+      console.error('Failed to fetch agents:', error);
+      // Keep empty array if API fails
+    }
+  };
+
+  const assignAgent = async (bookingId: string, agentId: string) => {
     const agent = agents.find(a => a.id === agentId);
     if (agent) {
       try {
-        await apiClient.assignAgentToPickup(pickupId, agentId);
+        // Use admin assign endpoint
+        await apiClient.assignAgent(bookingId, agentId);
         setPickups(pickups.map(p => 
-          p.id === pickupId 
+          p.id === bookingId 
             ? { ...p, status: 'assigned' as const, agentId: agent.id, agentName: agent.name }
             : p
         ));

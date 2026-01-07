@@ -421,6 +421,13 @@ const assignAgent = async (req, res) => {
   try {
     const { bookingId, agentId } = req.body;
 
+    if (!bookingId || !agentId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Booking ID and Agent ID are required',
+      });
+    }
+
     const booking = await Booking.findById(bookingId);
     if (!booking) {
       return res.status(404).json({
@@ -437,19 +444,29 @@ const assignAgent = async (req, res) => {
       });
     }
 
+    // Update booking
     booking.agentId = agentId;
     booking.status = 'Assigned';
     await booking.save();
 
-    // Add to agent's assigned pickups
-    agent.assignedPickups.push(booking._id);
-    await agent.save();
+    // Add to agent's assigned pickups (avoid duplicates)
+    if (!agent.assignedPickups.includes(booking._id)) {
+      agent.assignedPickups.push(booking._id);
+      await agent.save();
+    }
+
+    // Populate user and agent data for response
+    await booking.populate('userId', 'name email');
+    await booking.populate('agentId', 'name agentId');
+
+    console.log(`✅ Agent ${agent.name} assigned to booking ${booking.bookingId}`);
 
     res.status(200).json({
       success: true,
       data: { booking },
     });
   } catch (error) {
+    console.error('Error assigning agent:', error);
     res.status(400).json({
       success: false,
       error: error.message || 'Failed to assign agent',

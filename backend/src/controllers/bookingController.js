@@ -8,7 +8,22 @@ const Agent = require('../models/Agent');
 const createBooking = async (req, res) => {
   try {
     const { address, wasteType, weight, preferredDate, preferredTime, ngoPartner } = req.body;
+    
+    // Extract user ID from authenticated user
     const userId = req.user._id || req.user.id;
+    
+    if (!userId) {
+      console.error('User ID not found in request:', {
+        user: req.user,
+        userId: req.user?._id || req.user?.id,
+      });
+      return res.status(401).json({
+        success: false,
+        error: 'User authentication failed. Please log in again.',
+      });
+    }
+
+    console.log('Creating booking for user:', userId);
 
     // Validate required fields
     if (!address || !wasteType || !weight || !preferredDate || !preferredTime) {
@@ -38,13 +53,28 @@ const createBooking = async (req, res) => {
       status: 'Pending',
     });
 
+    // Populate user data for response
+    await booking.populate('userId', 'name email');
+
+    console.log(`✅ Booking created: ${booking.bookingId} for user ${userId}`);
+
     res.status(201).json({
       success: true,
       data: {
         booking: {
+          _id: booking._id,
           bookingId: booking.bookingId,
+          userId: booking.userId,
+          address: booking.address,
+          wasteType: booking.wasteType,
+          weight: booking.weight,
+          preferredDate: booking.preferredDate,
+          preferredTime: booking.preferredTime,
+          ngoPartner: booking.ngoPartner,
           status: booking.status,
+          agentId: booking.agentId,
           createdAt: booking.createdAt,
+          updatedAt: booking.updatedAt,
         },
       },
     });
@@ -178,11 +208,68 @@ const updateBookingStatus = async (req, res) => {
   }
 };
 
+// @desc    Update booking status (Agent)
+// @route   PATCH /api/bookings/:id/status
+// @access  Private (Agent) - Can only update their own assigned bookings
+const updateBookingStatusByAgent = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const bookingId = req.params.id;
+    const agentId = req.user._id || req.user.id;
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        error: 'Booking not found',
+      });
+    }
+
+    // Verify agent is assigned to this booking
+    if (booking.agentId && booking.agentId.toString() !== agentId.toString()) {
+      return res.status(403).json({
+        success: false,
+        error: 'You are not assigned to this booking',
+      });
+    }
+
+    // Validate status transitions for agents
+    const validStatuses = ['Assigned', 'In Progress', 'Completed'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid status. Allowed: ${validStatuses.join(', ')}`,
+      });
+    }
+
+    booking.status = status;
+    
+    // If completing, set completion timestamp
+    if (status === 'Completed') {
+      booking.completedAt = new Date();
+    }
+
+    await booking.save();
+
+    res.status(200).json({
+      success: true,
+      data: { booking },
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      error: error.message || 'Failed to update booking',
+    });
+  }
+};
+
 module.exports = {
   createBooking,
   getBookingById,
   getUserBookings,
   getAllBookings,
   updateBookingStatus,
+  updateBookingStatusByAgent,
 };
 

@@ -152,18 +152,27 @@ const getAgentPickups = async (req, res) => {
     const pickups = bookings.map((booking) => {
       const user = booking.userId;
       const isAssigned = booking.agentId && booking.agentId.toString() === agent._id.toString();
+      
+      // Format date consistently (ISO string for frontend parsing)
+      const preferredDate = booking.preferredDate instanceof Date 
+        ? booking.preferredDate.toISOString().split('T')[0]
+        : new Date(booking.preferredDate).toISOString().split('T')[0];
+      
       return {
         _id: booking._id,
         bookingId: booking.bookingId,
         customerName: user?.name || 'Unknown',
         address: booking.address,
         wasteType: `${booking.wasteType} - ${booking.weight} kg`,
-        date: booking.preferredDate.toLocaleDateString(),
+        date: preferredDate,
+        preferredDate: booking.preferredDate,
         time: booking.preferredTime,
-        status: booking.status === 'Pending' ? 'New' : booking.status === 'Assigned' ? 'New' : booking.status,
+        preferredTime: booking.preferredTime,
+        status: booking.status,
         ngoPartner: booking.ngoPartner || 'Not assigned',
         isAssigned: isAssigned,
         canAccept: booking.status === 'Pending' && !booking.agentId,
+        weight: booking.weight,
       };
     });
 

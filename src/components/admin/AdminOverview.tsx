@@ -153,8 +153,8 @@ export function AdminOverview() {
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={weeklyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="day" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
+                <XAxis dataKey="day" stroke="#3d2817" tick={{ fill: '#3d2817' }} />
+                <YAxis stroke="#3d2817" tick={{ fill: '#3d2817' }} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: '#fff', 
@@ -180,7 +180,7 @@ export function AdminOverview() {
             <CardTitle className="text-purple-900">Waste Type Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={300} className="[&_.recharts-pie-label-text]:fill-[#3d2817] [&_.recharts-pie-label-text]:font-medium">
               <PieChart>
                 <Pie
                   data={wasteTypeData}
@@ -212,8 +212,8 @@ export function AdminOverview() {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={weeklyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="day" stroke="#6b7280" />
-              <YAxis stroke="#6b7280" />
+              <XAxis dataKey="day" stroke="#3d2817" tick={{ fill: '#3d2817' }} />
+              <YAxis stroke="#3d2817" tick={{ fill: '#3d2817' }} />
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: '#fff', 

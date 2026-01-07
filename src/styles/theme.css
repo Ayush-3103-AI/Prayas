@@ -1,37 +1,73 @@
-/* Recycled Paper Theme Variables */
+/**
+ * Recycled Paper Theme Variables
+ * Enhanced with design token system integration
+ * Maintains backward compatibility with existing variables
+ */
+
+/* Design tokens are imported in globals.css */
 
 :root {
+  /* ============================================
+     LEGACY VARIABLES - Backward Compatibility
+     These map to new design tokens for seamless migration
+     ============================================ */
+  
   /* Background Colors - Garbage/Dirt */
-  --color-dirt-dark: #5a4a3a;
-  --color-dirt-medium: #6b5d4f;
-  --color-dirt-light: #8b7355;
+  /* Now reference design tokens */
+  --color-dirt-dark: var(--color-dirt-dark, #5a4a3a);
+  --color-dirt-medium: var(--color-dirt-medium, #6b5d4f);
+  --color-dirt-light: var(--color-dirt-light, #8b7355);
   
   /* Paper Colors */
-  --color-paper-primary: #faf0e6; /* Linen/off-white */
-  --color-paper-secondary: #f5f5dc; /* Beige */
-  --color-paper-aged: #f4e4c1; /* Light tan */
-  --color-paper-border: #d4c5b0;
+  /* Now reference design tokens */
+  --color-paper-primary: var(--color-paper-primary, #faf0e6); /* Linen/off-white */
+  --color-paper-secondary: var(--color-paper-secondary, #f5f5dc); /* Beige */
+  --color-paper-aged: var(--color-paper-aged, #f4e4c1); /* Light tan */
+  --color-paper-border: var(--color-paper-border, #d4c5b0);
   
   /* Text Colors */
-  --text-primary: #3d2817; /* Dark brown */
-  --text-secondary: #2c1810; /* Darker brown */
-  --text-tertiary: #1a0f08; /* Charcoal brown */
-  --text-muted: #6b5d4f; /* Muted brown */
+  /* Now reference design tokens */
+  --text-primary: var(--color-text-primary, #3d2817); /* Dark brown */
+  --text-secondary: var(--color-text-secondary, #2c1810); /* Darker brown */
+  --text-tertiary: var(--color-text-tertiary, #1a0f08); /* Charcoal brown */
+  --text-muted: var(--color-text-muted, #6b5d4f); /* Muted brown */
   
   /* Accent Colors */
-  --color-accent-green: #6b8e6b; /* Muted green */
-  --color-accent-brown: #8b6f47; /* Muted brown */
-  --color-accent-dark: #5a4a3a;
+  /* Now reference design tokens */
+  --color-accent-green: var(--color-primary-500, #6b8e6b); /* Muted green */
+  --color-accent-brown: var(--color-secondary-500, #8b6f47); /* Muted brown */
+  --color-accent-dark: var(--color-dirt-dark, #5a4a3a);
   
   /* Typography */
-  --font-heading: 'Playfair Display', serif;
-  --font-body: 'Outfit', sans-serif;
-  --font-paper: 'Georgia', 'Times New Roman', serif;
+  /* Now reference design tokens */
+  --font-heading: var(--font-family-heading, 'Canva Sans', 'Inter', sans-serif);
+  --font-body: var(--font-family-body, 'Canva Sans', 'Inter', sans-serif);
+  --font-paper: var(--font-family-body, 'Canva Sans', 'Inter', sans-serif);
   
   /* Spacing & Effects */
-  --tracking-wide: 0.2em;
-  --tracking-wider: 0.4em;
-  --border-radius-paper: 0.5rem;
-  --shadow-paper: 0 2px 4px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
+  /* Now reference design tokens */
+  --tracking-wide: var(--letter-spacing-wide, 0.025em);
+  --tracking-wider: var(--letter-spacing-widest, 0.1em);
+  --border-radius-paper: var(--radius-card, 0.75rem);
+  --shadow-paper: var(--shadow-paper-md);
+  
+  /* ============================================
+     ENHANCED THEME VARIABLES
+     Additional theme-specific variables using tokens
+     ============================================ */
+  
+  /* Paper Texture Variables */
+  --paper-texture-opacity: 0.15;
+  --paper-line-opacity: 0.2;
+  --paper-margin-opacity: 0.3;
+  
+  /* Ink Bleed Effect */
+  --ink-bleed-opacity: 0.02;
+  --ink-bleed-radius: 50%;
+  
+  /* Paper Rotation (for natural crumpled look) */
+  --paper-rotation-min: -1.5deg;
+  --paper-rotation-max: 1.5deg;
 }
+
 

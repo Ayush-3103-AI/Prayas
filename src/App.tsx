@@ -5,6 +5,7 @@ import { ContactPage } from './components/ContactPage';
 import { UserDashboard } from './components/UserDashboard';
 import { BookPickupPage } from './components/BookPickupPage';
 import { PickupStatusPage } from './components/PickupStatusPage';
+import { PickupConfirmationPage } from './components/PickupConfirmationPage';
 import { ImpactPage } from './components/ImpactPage';
 import { LeaderboardPage } from './components/LeaderboardPage';
 import { ProfilePage } from './components/ProfilePage';
@@ -14,10 +15,9 @@ import { AdminPickupManagement } from './components/AdminPickupManagement';
 import { AdminNGOManagement } from './components/AdminNGOManagement';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
-import { GarbagePileBackground } from './components/background/GarbagePileBackground';
 
 export type UserRole = 'user' | 'agent' | 'admin' | null;
-export type PageView = 'landing' | 'about' | 'contact' | 'login' | 'signup' | 'dashboard' | 'book-pickup' | 'pickup-status' | 'impact' | 'leaderboard' | 'profile' | 'agent-dashboard' | 'admin-dashboard' | 'admin-pickups' | 'admin-ngos';
+export type PageView = 'landing' | 'about' | 'contact' | 'login' | 'signup' | 'dashboard' | 'book-pickup' | 'pickup-status' | 'pickup-confirmation' | 'impact' | 'leaderboard' | 'profile' | 'agent-dashboard' | 'admin-dashboard' | 'admin-pickups' | 'admin-ngos';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<PageView>('landing');
@@ -64,6 +64,8 @@ function App() {
         return <BookPickupPage onNavigate={navigate} onLogout={handleLogout} />;
       case 'pickup-status':
         return <PickupStatusPage onNavigate={navigate} onLogout={handleLogout} />;
+      case 'pickup-confirmation':
+        return <PickupConfirmationPage onNavigate={navigate} onLogout={handleLogout} />;
       case 'impact':
         return <ImpactPage onNavigate={navigate} onLogout={handleLogout} />;
       case 'leaderboard':
@@ -83,14 +85,7 @@ function App() {
     }
   };
 
-  return (
-    <div className="relative min-h-screen bg-white">
-      <GarbagePileBackground />
-      <div className="relative z-10">
-        {renderPage()}
-      </div>
-    </div>
-  );
+  return <>{renderPage()}</>;
 }
 
 export default App;

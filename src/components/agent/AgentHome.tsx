@@ -18,6 +18,7 @@ type PickupStatus = 'assigned' | 'on-the-way' | 'reached' | 'collected';
 
 interface AssignedPickup {
   id: string;
+  bookingId?: string;
   trackingNumber: string;
   date: string;
   timeSlot: string;
@@ -29,6 +30,8 @@ interface AssignedPickup {
   address: string;
   ngo: string;
   notes?: string;
+  canAccept?: boolean;
+  isAssigned?: boolean;
 }
 
 export function AgentHome({ user }: AgentHomeProps) {
@@ -90,10 +93,51 @@ export function AgentHome({ user }: AgentHomeProps) {
     totalWeight: pickups.reduce((sum, p) => sum + (p.actualWeight || 0), 0)
   };
 
-  const updatePickupStatus = (pickupId: string, newStatus: PickupStatus) => {
-    setPickups(pickups.map(p => 
-      p.id === pickupId ? { ...p, status: newStatus } : p
-    ));
+  const updatePickupStatus = async (pickupId: string, newStatus: PickupStatus) => {
+    try {
+      // Map PickupStatus to Booking status
+      let bookingStatus = 'Assigned';
+      if (newStatus === 'on-the-way') {
+        bookingStatus = 'In Progress';
+      } else if (newStatus === 'reached') {
+        bookingStatus = 'In Progress'; // Keep as In Progress until collected
+      } else if (newStatus === 'collected') {
+        bookingStatus = 'Completed';
+      }
+
+      // Update booking status via Agent API endpoint
+      await apiClient.updateBookingStatusByAgent(pickupId, bookingStatus);
+      
+      // Update local state
+      setPickups(pickups.map(p => 
+        p.id === pickupId ? { ...p, status: newStatus } : p
+      ));
+      
+      // Refresh to get latest data
+      fetchPickups();
+    } catch (error: any) {
+      console.error('Failed to update pickup status:', error);
+      alert(`Failed to update status: ${error.message || 'Unknown error'}`);
+    }
+  };
+
+  const acceptBooking = async (bookingId: string) => {
+    try {
+      const agentId = user.id;
+      if (!agentId) {
+        alert('Agent ID not found');
+        return;
+      }
+
+      // Call the accept booking endpoint
+      await apiClient.acceptBooking(agentId, bookingId);
+      
+      // Refresh pickups
+      fetchPickups();
+    } catch (error: any) {
+      console.error('Failed to accept booking:', error);
+      alert(`Failed to accept booking: ${error.message || 'Unknown error'}`);
+    }
   };
 
   const completeCollection = async (pickupId: string) => {
@@ -110,17 +154,13 @@ export function AgentHome({ user }: AgentHomeProps) {
         return;
       }
 
-      // Update status to 'collected' first with materials array
-      await apiClient.updatePickupStatus(pickupId, 'collected', {
-        materials: [{
-          type: pickup.wasteType.toLowerCase(),
-          actualWeight: parseFloat(collectionData.weight),
-          estimatedWeight: pickup.expectedWeight,
-        }]
+      // Use the booking completion endpoint
+      await apiClient.completePickup(pickupId, {
+        actualWeight: parseFloat(collectionData.weight),
+        wasteCondition: 'GOOD', // Default condition
+        notes: collectionData.notes || '',
+        photoUrls: [],
       });
-
-      // Then complete the pickup
-      await apiClient.updatePickupStatus(pickupId, 'completed');
 
       // Update local state
       setPickups(pickups.map(p => 
@@ -146,24 +186,74 @@ export function AgentHome({ user }: AgentHomeProps) {
 
   const fetchPickups = async () => {
     try {
-      const data = await apiClient.getAgentPickups();
-      // Transform API data to component format
-      const transformedPickups = data.map((p: any) => ({
-        id: p._id || p.id,
-        trackingNumber: p._id?.slice(-8) || p.id?.slice(-8) || 'N/A',
-        date: new Date(p.pickupDate).toISOString().split('T')[0],
-        timeSlot: p.timeSlot || 'N/A',
-        wasteType: p.materials?.[0]?.type || 'Mixed',
-        expectedWeight: p.materials?.[0]?.estimatedWeight || 0,
-        actualWeight: p.materials?.[0]?.actualWeight,
-        status: (p.status === 'completed' || p.status === 'collected' ? 'collected' : 
-                 p.status === 'assigned' ? 'assigned' : 
-                 p.status === 'in-progress' ? 'on-the-way' : 'reached') as PickupStatus,
-        userName: p.userId?.name || 'Unknown',
-        address: `${p.address?.street || ''}, ${p.address?.city || ''}, ${p.address?.state || ''} ${p.address?.pincode || ''}`,
-        ngo: p.selectedNGO?.name || 'N/A',
-        notes: p.notes || ''
-      }));
+      // Get agent ID from user object
+      const agentId = user.id;
+      if (!agentId) {
+        console.error('Agent ID not found');
+        return;
+      }
+
+      const response: any = await apiClient.getAgentPickups(agentId);
+      // Backend returns { success: true, data: { pickups: [...] } }
+      // apiClient returns data.data, so response is { pickups: [...] }
+      const pickupsData = response?.pickups || (Array.isArray(response) ? response : []);
+      
+      console.log('Agent pickups fetched:', pickupsData.length, 'bookings');
+      
+      // Transform Booking API data to component format
+      const transformedPickups = pickupsData.map((booking: any) => {
+        // Backend sends wasteType as "WasteType - weight kg", extract both
+        let wasteType = 'Mixed';
+        let expectedWeight = 0;
+        
+        if (typeof booking.wasteType === 'string' && booking.wasteType.includes(' - ')) {
+          // Format: "Plastic - 5 kg"
+          const wasteTypeMatch = booking.wasteType.match(/^(.+?)\s*-\s*(\d+(?:\.\d+)?)\s*kg$/i);
+          if (wasteTypeMatch) {
+            wasteType = wasteTypeMatch[1].trim();
+            expectedWeight = parseFloat(wasteTypeMatch[2]);
+          }
+        } else {
+          // Direct format
+          wasteType = booking.wasteType || 'Mixed';
+          expectedWeight = booking.weight || 0;
+        }
+        
+        // Map Booking status to PickupStatus
+        // Backend statuses: Pending, Assigned, In Progress, Completed
+        let status: PickupStatus = 'assigned';
+        if (booking.status === 'Completed') {
+          status = 'collected';
+        } else if (booking.status === 'In Progress') {
+          // Check if we need to distinguish between on-the-way and reached
+          // For now, treat In Progress as on-the-way
+          status = 'on-the-way';
+        } else if (booking.status === 'Assigned' || booking.isAssigned) {
+          status = 'assigned';
+        } else if (booking.status === 'Pending') {
+          // Pending bookings that can be accepted show as available
+          status = booking.canAccept ? 'assigned' : 'assigned';
+        }
+
+        return {
+          id: booking._id || booking.id,
+          bookingId: booking.bookingId || booking._id,
+          trackingNumber: booking.bookingId || booking._id?.slice(-8) || 'N/A',
+          date: booking.date || (booking.preferredDate ? new Date(booking.preferredDate).toISOString().split('T')[0] : ''),
+          timeSlot: booking.time || booking.preferredTime || 'N/A',
+          wasteType: wasteType,
+          expectedWeight: expectedWeight,
+          actualWeight: booking.actualWeight,
+          status: status,
+          userName: booking.customerName || booking.userId?.name || 'Unknown',
+          address: booking.address || 'N/A',
+          ngo: booking.ngoPartner || 'N/A',
+          notes: booking.notes || '',
+          canAccept: booking.canAccept || (booking.status === 'Pending' && !booking.agentId),
+          isAssigned: booking.isAssigned || (booking.agentId && booking.agentId.toString() === agentId),
+        };
+      });
+      
       setPickups(transformedPickups);
     } catch (error) {
       console.error('Failed to fetch pickups:', error);
@@ -191,16 +281,23 @@ export function AgentHome({ user }: AgentHomeProps) {
     }
   };
 
-  const getStatusLabel = (status: PickupStatus) => {
+  const getStatusLabel = (status: PickupStatus, pickup?: AssignedPickup) => {
+    // Show "New Booking Available" for pending bookings that can be accepted
+    if (pickup?.canAccept && !pickup?.isAssigned) {
+      return 'New Booking Available';
+    }
+    
     switch (status) {
       case 'assigned':
-        return 'Assigned';
+        return pickup?.isAssigned ? 'Assigned to Me' : 'Assigned';
       case 'on-the-way':
         return 'On The Way';
       case 'reached':
         return 'Reached Location';
       case 'collected':
         return 'Collected';
+      default:
+        return 'Unknown';
     }
   };
 
@@ -215,7 +312,7 @@ export function AgentHome({ user }: AgentHomeProps) {
               <div className="flex items-center gap-3 mb-2">
                 <p className="text-gray-900">{pickup.trackingNumber}</p>
                 <Badge className={`${getStatusColor(pickup.status)} border`}>
-                  {getStatusLabel(pickup.status)}
+                  {getStatusLabel(pickup.status, pickup)}
                 </Badge>
               </div>
               <p className="text-gray-600">{pickup.date} • {pickup.timeSlot}</p>
@@ -276,7 +373,16 @@ export function AgentHome({ user }: AgentHomeProps) {
             <>
               {!isExpanded ? (
                 <div className="flex gap-2">
-                  {pickup.status === 'assigned' && (
+                  {pickup.canAccept && !pickup.isAssigned && (
+                    <Button
+                      onClick={() => acceptBooking(pickup.id)}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Accept Booking
+                    </Button>
+                  )}
+                  {pickup.status === 'assigned' && pickup.isAssigned && (
                     <Button
                       onClick={() => updatePickupStatus(pickup.id, 'on-the-way')}
                       className="flex-1 bg-blue-600 hover:bg-blue-700"

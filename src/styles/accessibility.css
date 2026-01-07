@@ -1,0 +1,467 @@
+/**
+ * Accessibility System
+ * WCAG 2.1 AA+ compliant patterns and utilities
+ * Ensures all interactive elements are keyboard accessible and screen-reader friendly
+ */
+
+/* ============================================
+   FOCUS MANAGEMENT
+   ============================================ */
+
+/**
+ * Visible Focus Indicators
+ * All interactive elements must have visible focus states
+ * 3px ring with 2px offset for clear visibility
+ */
+:focus-visible {
+  outline: none;
+  box-shadow: 
+    0 0 0 2px var(--color-focus-ring-offset, #ffffff),
+    0 0 0 5px var(--color-focus-ring, var(--color-primary-500));
+  border-radius: var(--radius-md);
+}
+
+/* Enhanced focus for high-contrast mode */
+@media (prefers-contrast: high) {
+  :focus-visible {
+    outline: 3px solid var(--color-focus-ring);
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+}
+
+/* Focus for buttons */
+button:focus-visible,
+[role="button"]:focus-visible {
+  box-shadow: 
+    0 0 0 2px var(--color-focus-ring-offset),
+    0 0 0 5px var(--color-focus-ring),
+    var(--shadow-focus);
+}
+
+/* Focus for inputs */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  border-color: var(--color-focus-ring);
+  box-shadow: 
+    0 0 0 2px var(--color-focus-ring-offset),
+    0 0 0 5px var(--color-focus-ring);
+}
+
+/* Focus for links */
+a:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Remove focus outline for mouse users (keep for keyboard) */
+:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+/* ============================================
+   SKIP LINKS
+   ============================================ */
+
+/**
+ * Skip to main content link
+ * Allows keyboard users to skip navigation
+ */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-primary-500);
+  color: var(--color-text-on-primary);
+  padding: var(--spacing-2) var(--spacing-4);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  z-index: var(--z-max);
+  font-weight: var(--font-weight-semibold);
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+  top: var(--spacing-2);
+}
+
+/* ============================================
+   COLOR CONTRAST UTILITIES
+   ============================================ */
+
+/**
+ * High Contrast Text
+ * Ensures text meets WCAG AA+ (4.5:1) or AAA (7:1) standards
+ */
+.text-contrast-aa {
+  color: var(--color-text-primary);
+}
+
+.text-contrast-aaa {
+  color: var(--color-text-secondary);
+}
+
+/* Text on colored backgrounds */
+.text-on-primary {
+  color: var(--color-text-on-primary);
+}
+
+.text-on-primary-muted {
+  color: var(--color-text-on-primary-muted);
+}
+
+/* Ensure sufficient contrast for disabled states */
+.text-disabled {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+/* ============================================
+   ARIA PATTERNS
+   ============================================ */
+
+/**
+ * Screen Reader Only Content
+ * Hide visually but keep accessible to screen readers
+ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Show on focus (for skip links) */
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/**
+ * Live Region Announcements
+ * For dynamic content updates
+ */
+.live-region {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ============================================
+   KEYBOARD NAVIGATION
+   ============================================ */
+
+/**
+ * Keyboard Navigation Indicators
+ * Visual feedback for keyboard users
+ */
+.keyboard-user *:focus {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Remove focus styles for mouse users */
+.mouse-user *:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/**
+ * Focus Trap Container
+ * For modals and dialogs
+ */
+.focus-trap {
+  position: relative;
+}
+
+.focus-trap:focus-within {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   INTERACTIVE ELEMENT STATES
+   ============================================ */
+
+/**
+ * Disabled State
+ * Clear visual and functional indication
+ */
+[disabled],
+[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+[disabled]:focus-visible,
+[aria-disabled="true"]:focus-visible {
+  outline: 2px dashed var(--color-text-disabled);
+  box-shadow: none;
+}
+
+/**
+ * Required Field Indicator
+ */
+[required]::after,
+.required::after {
+  content: " *";
+  color: var(--color-destructive-600);
+  font-weight: var(--font-weight-bold);
+  margin-left: var(--spacing-0-5);
+}
+
+/* ============================================
+   FORM ACCESSIBILITY
+   ============================================ */
+
+/**
+ * Error States
+ * Clear indication of validation errors
+ */
+[aria-invalid="true"],
+.error {
+  border-color: var(--color-destructive-500);
+}
+
+[aria-invalid="true"]:focus-visible,
+.error:focus-visible {
+  box-shadow: 
+    0 0 0 2px var(--color-focus-ring-offset),
+    0 0 0 5px var(--color-destructive-500);
+}
+
+/* Error message styling */
+.error-message {
+  color: var(--color-destructive-700);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-1);
+  display: block;
+}
+
+.error-message::before {
+  content: "⚠ ";
+  font-weight: var(--font-weight-bold);
+}
+
+/**
+ * Success States
+ */
+.success {
+  border-color: var(--color-success-500);
+}
+
+.success:focus-visible {
+  box-shadow: 
+    0 0 0 2px var(--color-focus-ring-offset),
+    0 0 0 5px var(--color-success-500);
+}
+
+/* ============================================
+   TOUCH TARGET SIZES
+   ============================================ */
+
+/**
+ * Minimum Touch Target
+ * WCAG 2.1 requires minimum 44x44px for touch targets
+ */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure buttons meet touch target requirements */
+button,
+[role="button"],
+a[href] {
+  min-height: 44px;
+  padding: var(--spacing-2) var(--spacing-4);
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+/**
+ * Respect User Motion Preferences
+ * Disable animations for users who prefer reduced motion
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   HIGH CONTRAST MODE
+   ============================================ */
+
+/**
+ * Enhanced Contrast for High Contrast Mode
+ */
+@media (prefers-contrast: high) {
+  :root {
+    --color-text-primary: #000000;
+    --color-text-secondary: #000000;
+    --color-bg-primary: #ffffff;
+    --color-paper-primary: #ffffff;
+  }
+  
+  button,
+  [role="button"] {
+    border: 2px solid currentColor;
+  }
+  
+  input,
+  textarea,
+  select {
+    border: 2px solid currentColor;
+  }
+}
+
+/* ============================================
+   SCREEN READER ANNOUNCEMENTS
+   ============================================ */
+
+/**
+ * Announcement Region
+ * For important status updates
+ */
+[role="status"],
+[role="alert"],
+[role="log"] {
+  position: relative;
+}
+
+/* Polite announcements (non-urgent) */
+[role="status"] {
+  /* Screen readers will announce when content changes */
+}
+
+/* Assertive announcements (urgent) */
+[role="alert"] {
+  /* Screen readers will interrupt to announce */
+  border: 2px solid var(--color-destructive-500);
+  padding: var(--spacing-2);
+  border-radius: var(--radius-md);
+  background: var(--color-destructive-50);
+  color: var(--color-destructive-900);
+}
+
+/* ============================================
+   ARIA LABEL UTILITIES
+   ============================================ */
+
+/**
+ * Icon Buttons
+ * Must have accessible labels
+ */
+.icon-button {
+  /* Ensure icon buttons have aria-label or aria-labelledby */
+}
+
+.icon-button:not([aria-label]):not([aria-labelledby])::after {
+  content: " (Missing accessible label)";
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ============================================
+   KEYBOARD SHORTCUTS
+   ============================================ */
+
+/**
+ * Keyboard Shortcut Indicator
+ * Show keyboard shortcuts for power users
+ */
+kbd {
+  display: inline-block;
+  padding: var(--spacing-0-5) var(--spacing-1);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  line-height: 1;
+  color: var(--color-text-primary);
+  background: var(--color-neutral-100);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-sm);
+  box-shadow: 
+    0 1px 0 rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   FOCUS MANAGEMENT FOR MODALS
+   ============================================ */
+
+/**
+ * Modal Focus Trap
+ * Keep focus within modal when open
+ */
+.modal-open {
+  overflow: hidden;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-bg-overlay);
+  z-index: var(--z-modal-backdrop);
+}
+
+.modal-content {
+  position: relative;
+  z-index: var(--z-modal);
+  outline: none; /* Focus managed programmatically */
+}
+
+/* ============================================
+   ACCESSIBILITY CHECKLIST UTILITIES
+   ============================================ */
+
+/**
+ * Visual Indicators for Accessibility Testing
+ * Remove in production
+ */
+[data-a11y-debug] {
+  outline: 2px dashed red;
+}
+
+[data-a11y-debug]::before {
+  content: "A11Y: Missing " attr(data-a11y-debug);
+  position: absolute;
+  top: -20px;
+  left: 0;
+  background: red;
+  color: white;
+  padding: 2px 4px;
+  font-size: 10px;
+  z-index: var(--z-max);
+}
+
+

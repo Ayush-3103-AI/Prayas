@@ -1,0 +1,455 @@
+/**
+ * Responsive Breakpoint System
+ * Consistent breakpoints across the application
+ * Mobile-first approach with fluid typography
+ */
+
+/* ============================================
+   BREAKPOINT DEFINITIONS
+   ============================================ */
+
+:root {
+  /* Breakpoint Values */
+  --breakpoint-mobile: 0px;
+  --breakpoint-mobile-max: 639px;
+  --breakpoint-tablet: 640px;
+  --breakpoint-tablet-max: 1023px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-desktop-max: 1279px;
+  --breakpoint-wide: 1280px;
+  --breakpoint-wide-max: 1535px;
+  --breakpoint-ultra: 1536px;
+  
+  /* Container Max Widths */
+  --container-mobile: 100%;
+  --container-tablet: 640px;
+  --container-desktop: 1024px;
+  --container-wide: 1280px;
+  --container-ultra: 1536px;
+  
+  /* Fluid Typography Breakpoints */
+  --fluid-min-width: 320px; /* Minimum viewport width */
+  --fluid-max-width: 1920px; /* Maximum viewport width */
+}
+
+/* ============================================
+   MEDIA QUERY MIXINS (CSS Custom Properties)
+   ============================================ */
+
+/**
+ * Mobile: 0px - 639px
+ * Base styles (mobile-first)
+ */
+@media (max-width: 639px) {
+  :root {
+    --responsive-base: 1;
+  }
+}
+
+/**
+ * Tablet: 640px - 1023px
+ */
+@media (min-width: 640px) and (max-width: 1023px) {
+  :root {
+    --responsive-base: 1.25;
+  }
+}
+
+/**
+ * Desktop: 1024px - 1279px
+ */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  :root {
+    --responsive-base: 1.5;
+  }
+}
+
+/**
+ * Wide: 1280px+
+ */
+@media (min-width: 1280px) {
+  :root {
+    --responsive-base: 1.75;
+  }
+}
+
+/* ============================================
+   FLUID TYPOGRAPHY SCALES
+   ============================================ */
+
+/**
+ * Fluid Type Scale
+ * Scales smoothly between min and max viewport widths
+ * Uses clamp() for automatic scaling
+ */
+
+:root {
+  /* Base font sizes with fluid scaling */
+  --fluid-text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --fluid-text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+  --fluid-text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --fluid-text-lg: clamp(1.125rem, 1.05rem + 0.375vw, 1.25rem);
+  --fluid-text-xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);
+  --fluid-text-2xl: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);
+  --fluid-text-3xl: clamp(1.875rem, 1.65rem + 1.125vw, 2.25rem);
+  --fluid-text-4xl: clamp(2.25rem, 1.95rem + 1.5vw, 3rem);
+  --fluid-text-5xl: clamp(3rem, 2.5rem + 2.5vw, 4.5rem);
+  --fluid-text-6xl: clamp(3.75rem, 3rem + 3.75vw, 6rem);
+  
+  /* Heading-specific fluid scales */
+  --fluid-h1: clamp(2rem, 1.5rem + 2.5vw, 3.5rem);
+  --fluid-h2: clamp(1.75rem, 1.35rem + 2vw, 2.75rem);
+  --fluid-h3: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem);
+  --fluid-h4: clamp(1.25rem, 1.05rem + 1vw, 1.75rem);
+  --fluid-h5: clamp(1.125rem, 0.95rem + 0.875vw, 1.5rem);
+  --fluid-h6: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+}
+
+/* ============================================
+   RESPONSIVE SPACING
+   ============================================ */
+
+/**
+ * Fluid Spacing Scale
+ * Scales spacing proportionally with viewport
+ */
+:root {
+  --spacing-fluid-xs: clamp(0.25rem, 0.2rem + 0.25vw, 0.5rem);
+  --spacing-fluid-sm: clamp(0.5rem, 0.4rem + 0.5vw, 1rem);
+  --spacing-fluid-md: clamp(1rem, 0.8rem + 1vw, 2rem);
+  --spacing-fluid-lg: clamp(1.5rem, 1.2rem + 1.5vw, 3rem);
+  --spacing-fluid-xl: clamp(2rem, 1.6rem + 2vw, 4rem);
+  --spacing-fluid-2xl: clamp(3rem, 2.4rem + 3vw, 6rem);
+  --spacing-fluid-3xl: clamp(4rem, 3.2rem + 4vw, 8rem);
+}
+
+/* ============================================
+   RESPONSIVE UTILITY CLASSES
+   ============================================ */
+
+/**
+ * Container Utilities
+ */
+.container-responsive {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--spacing-4);
+  padding-right: var(--spacing-4);
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    max-width: var(--container-tablet);
+    padding-left: var(--spacing-6);
+    padding-right: var(--spacing-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    max-width: var(--container-desktop);
+    padding-left: var(--spacing-8);
+    padding-right: var(--spacing-8);
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-responsive {
+    max-width: var(--container-wide);
+  }
+}
+
+@media (min-width: 1536px) {
+  .container-responsive {
+    max-width: var(--container-ultra);
+  }
+}
+
+/* ============================================
+   RESPONSIVE GRID SYSTEM
+   ============================================ */
+
+/**
+ * Grid Columns - Responsive
+ */
+.grid-responsive {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-4);
+}
+
+@media (min-width: 640px) {
+  .grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-8);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid-responsive {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ============================================
+   RESPONSIVE TYPOGRAPHY UTILITIES
+   ============================================ */
+
+/**
+ * Responsive Text Sizes
+ */
+.text-responsive-xs {
+  font-size: var(--fluid-text-xs);
+}
+
+.text-responsive-sm {
+  font-size: var(--fluid-text-sm);
+}
+
+.text-responsive-base {
+  font-size: var(--fluid-text-base);
+}
+
+.text-responsive-lg {
+  font-size: var(--fluid-text-lg);
+}
+
+.text-responsive-xl {
+  font-size: var(--fluid-text-xl);
+}
+
+.text-responsive-2xl {
+  font-size: var(--fluid-text-2xl);
+}
+
+.text-responsive-3xl {
+  font-size: var(--fluid-text-3xl);
+}
+
+.text-responsive-4xl {
+  font-size: var(--fluid-text-4xl);
+}
+
+.text-responsive-5xl {
+  font-size: var(--fluid-text-5xl);
+}
+
+.text-responsive-6xl {
+  font-size: var(--fluid-text-6xl);
+}
+
+/* ============================================
+   RESPONSIVE VISIBILITY UTILITIES
+   ============================================ */
+
+/**
+ * Show/Hide Based on Breakpoint
+ */
+.show-mobile {
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .show-mobile {
+    display: none;
+  }
+}
+
+.hide-mobile {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .hide-mobile {
+    display: block;
+  }
+}
+
+.show-tablet {
+  display: none;
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .show-tablet {
+    display: block;
+  }
+}
+
+.hide-tablet {
+  display: block;
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hide-tablet {
+    display: none;
+  }
+}
+
+.show-desktop {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .show-desktop {
+    display: block;
+  }
+}
+
+.hide-desktop {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .hide-desktop {
+    display: none;
+  }
+}
+
+/* ============================================
+   RESPONSIVE LAYOUT UTILITIES
+   ============================================ */
+
+/**
+ * Responsive Flex Direction
+ */
+.flex-responsive {
+  flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  .flex-responsive {
+    flex-direction: row;
+  }
+}
+
+/**
+ * Responsive Padding
+ */
+.padding-responsive {
+  padding: var(--spacing-4);
+}
+
+@media (min-width: 640px) {
+  .padding-responsive {
+    padding: var(--spacing-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .padding-responsive {
+    padding: var(--spacing-8);
+  }
+}
+
+/**
+ * Responsive Margin
+ */
+.margin-responsive {
+  margin: var(--spacing-4);
+}
+
+@media (min-width: 640px) {
+  .margin-responsive {
+    margin: var(--spacing-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .margin-responsive {
+    margin: var(--spacing-8);
+  }
+}
+
+/* ============================================
+   RESPONSIVE IMAGE UTILITIES
+   ============================================ */
+
+/**
+ * Responsive Images
+ */
+.img-responsive {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.img-responsive-square {
+  aspect-ratio: 1 / 1;
+}
+
+.img-responsive-landscape {
+  aspect-ratio: 16 / 9;
+}
+
+.img-responsive-portrait {
+  aspect-ratio: 3 / 4;
+}
+
+/* ============================================
+   ORIENTATION UTILITIES
+   ============================================ */
+
+/**
+ * Landscape Orientation
+ */
+@media (orientation: landscape) {
+  .landscape-only {
+    display: block;
+  }
+  
+  .portrait-only {
+    display: none;
+  }
+}
+
+/**
+ * Portrait Orientation
+ */
+@media (orientation: portrait) {
+  .landscape-only {
+    display: none;
+  }
+  
+  .portrait-only {
+    display: block;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  /* Optimize for print */
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  a {
+    text-decoration: underline;
+  }
+  
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+}
+
+

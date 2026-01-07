@@ -187,8 +187,8 @@ export function DonationImpact({ user }: DonationImpactProps) {
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="month" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
+                <XAxis dataKey="month" stroke="#3d2817" tick={{ fill: '#3d2817' }} />
+                <YAxis stroke="#3d2817" tick={{ fill: '#3d2817' }} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: '#fff', 
@@ -215,7 +215,7 @@ export function DonationImpact({ user }: DonationImpactProps) {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-center">
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={300} className="[&_.recharts-pie-label-text]:fill-[#3d2817] [&_.recharts-pie-label-text]:font-medium">
                 <PieChart>
                   <Pie
                     data={wasteBreakdown}
@@ -248,8 +248,8 @@ export function DonationImpact({ user }: DonationImpactProps) {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={monthlyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="month" stroke="#6b7280" />
-              <YAxis stroke="#6b7280" />
+              <XAxis dataKey="month" stroke="#3d2817" tick={{ fill: '#3d2817' }} />
+              <YAxis stroke="#3d2817" tick={{ fill: '#3d2817' }} />
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: '#fff', 

@@ -35,7 +35,16 @@ const connectDB = async () => {
 
   } catch (error) {
     console.error(`❌ MongoDB Connection Error: ${error.message}`);
-    console.error('Please check your MONGODB_URI in .env file');
+    console.error('\n📋 Troubleshooting Steps:');
+    console.error('1. If using local MongoDB:');
+    console.error('   - Install MongoDB: https://www.mongodb.com/try/download/community');
+    console.error('   - Start MongoDB service: net start MongoDB (Windows) or mongod (Linux/Mac)');
+    console.error('2. If using MongoDB Atlas (Recommended - No installation needed):');
+    console.error('   - Sign up at: https://www.mongodb.com/cloud/atlas/register');
+    console.error('   - Create a free cluster');
+    console.error('   - Get connection string and update MONGODB_URI in .env file');
+    console.error('   - Example: MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/prayas');
+    console.error('\n💡 Quick Fix: Update MONGODB_URI in .env file with your MongoDB Atlas connection string');
     process.exit(1);
   }
 };

@@ -59,12 +59,27 @@ class ApiClient {
         const errorMessage = errorData.error || errorData.message || errorData.msg || 
                            `HTTP error! status: ${response.status}`;
         console.error('API Error:', errorMessage, errorData);
+        
+        // Handle token expiration specifically
+        if (response.status === 401 || errorMessage.includes('token') || errorMessage.includes('Token expired') || errorMessage.includes('Invalid token') || errorMessage.includes('Access denied')) {
+          // Clear invalid token
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          throw new Error('Session expired. Please log in again.');
+        }
+        
         throw new Error(errorMessage);
       }
 
       const data: ApiResponse<T> = await response.json();
       
       if (!data.success) {
+        // Handle token expiration in response
+        if (data.error && (data.error.includes('token') || data.error.includes('Token expired') || data.error.includes('Invalid token') || data.error.includes('Access denied'))) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          throw new Error('Session expired. Please log in again.');
+        }
         throw new Error(data.error || 'Request failed');
       }
 
@@ -109,8 +124,9 @@ class ApiClient {
     });
   }
 
-  // Agent methods
-  async getAgentPickups(status?: string) {
+  // Agent methods - Note: This method is deprecated, use getAgentPickups(agentId) instead
+  // Kept for backward compatibility but should use Booking API
+  async getAgentPickupsOld(status?: string) {
     const query = status ? `?status=${status}` : '';
     return this.request(`/pickups/agent/assigned${query}`);
   }
@@ -134,7 +150,13 @@ class ApiClient {
 
   // NGO methods
   async getNGOs() {
-    return this.request('/ngos');
+    // NGO endpoint is public, so always use authRequest (no token required)
+    try {
+      return this.authRequest('/ngos');
+    } catch (error) {
+      console.error('Failed to fetch NGOs from backend:', error);
+      throw error; // Let the component handle the error and show fallback
+    }
   }
 
   // Authentication methods (don't require token)
@@ -272,6 +294,13 @@ class ApiClient {
     });
   }
 
+  async updateBookingStatusByAgent(bookingId: string, status: string) {
+    return this.request(`/bookings/${bookingId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  }
+
   // Agent methods
   async registerAgent(agentData: { name: string; email: string; phone: string; agentId: string; password: string }) {
     return this.request('/agents/register', {
@@ -286,6 +315,12 @@ class ApiClient {
 
   async getAgentPickups(agentId: string) {
     return this.request(`/agents/${agentId}/pickups`);
+  }
+
+  async acceptBooking(agentId: string, bookingId: string) {
+    return this.request(`/agents/${agentId}/accept-booking/${bookingId}`, {
+      method: 'POST',
+    });
   }
 
   async completePickup(pickupId: string, data: {
